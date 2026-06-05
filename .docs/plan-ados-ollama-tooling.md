@@ -86,6 +86,15 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ---
 
+## Post-completion notes
+
+- **2026-06-05** — Added `--cloud-only`/`--local-only` to `gen-opencode-config`
+  (+ orchestrator forwarding) so all-cloud (e.g. Opus 4.8) and all-local profiles
+  are one flag. README now documents two named quickstarts (all-cloud Opus 4.8;
+  hybrid gemma4:26b-mlx + Opus 4.8). **Verified live:** both `gemma4:26b-mlx` and
+  `gemma4:26b` pull and **tool-call** successfully (num_ctx 32000) — the MLX
+  variant works, so it stays the documented local default. 49/49 bats green.
+
 ## Context
 
 `claude-setup-agentic-delivery-os` is the Bash-first harness whose job (per its

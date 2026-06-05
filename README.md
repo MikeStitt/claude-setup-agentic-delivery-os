@@ -28,45 +28,77 @@ Inference (Gemma) runs natively on the Mac; only the agents' command/build
 execution runs in the Linux VM. Run `tools/ados-ollama-doctor` to see what's
 missing.
 
-## Quickstart: put `elephant` under ADOS-on-Ollama (gemma4:26b-mlx)
+## Quickstart: put `elephant` under ADOS-on-Ollama
 
-`gemma4:26b-mlx` is the 26B Mixture-of-Experts Gemma 4 (~4B active) in Apple's MLX
-format — fast on Apple Silicon, ~17 GB, text-only (fine for coding agents).
+Both paths below share these two lines:
 
 ```bash
 TOOLKIT=~/projects/claude-setup-agentic-delivery-os   # this repo
+export ANTHROPIC_API_KEY=sk-ant-...                   # your Anthropic key
+```
 
-# 0) One-time host setup: make Ollama reachable from the sandbox, then pull + verify
-#    the model. host Ollama defaults to 127.0.0.1, which the VM cannot reach.
-export OLLAMA_HOST=0.0.0.0:11434          # add to your shell profile; restart Ollama
-"$TOOLKIT/scripts/setup-ollama.sh" --model gemma4:26b-mlx --verify-tools
-#    -> want "Tool-calling works on gemma4:26b-mlx"; if it WARNs, the local agents
-#       won't drive tools — try gemma4:26b / gemma4:31b or keep them on cloud.
+### All-cloud — Anthropic Opus 4.8 (no local model)
 
-# 1) Clone the project
+Every agent runs on `anthropic/claude-opus-4-8`; no Ollama needed. Agents still
+execute isolated in the Docker sandbox.
+
+```bash
 git clone https://github.com/MikeStitt/elephant.git
 cd elephant
 
-# 2) Install ADOS + write the hybrid config into elephant.
-#    Preview first (changes nothing), then apply. Idempotent: safe to re-run.
-"$TOOLKIT/tools/ados-ollama" all --target . --model gemma4:26b-mlx --dry-run
-"$TOOLKIT/tools/ados-ollama" all --target . --model gemma4:26b-mlx
-git add -A && git commit -m "chore: add ADOS-on-Ollama config"
+# install ADOS, then write an all-cloud Opus config (no local agents)
+"$TOOLKIT/tools/ados-ollama" install   --target .
+"$TOOLKIT/tools/ados-ollama" configure --target . \
+  --cloud-only --cloud-model anthropic/claude-opus-4-8
+git add -A && git commit -m "chore: ADOS config (cloud-only, Opus 4.8)"
 
-# 3) Launch OpenCode for elephant inside the isolated Docker sandbox.
-#    Inject your cloud key and allow its host through the sandbox egress proxy.
+# launch OpenCode in the sandbox (inject key + allow Anthropic through the proxy)
 "$TOOLKIT/tools/ados-sandbox" --target . \
   --env ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
   --allow-host api.anthropic.com
 ```
 
-Inside OpenCode, drive ADOS as usual — autopilot `@pm deliver change GH-1`, or
-step by step (`/plan-change` → `/write-spec` → … → `/pr`). Local agents
-(`committer`, `runner`, …) think on Gemma on your Mac's GPU; high-stakes agents
-(`architect`, `reviewer`, `coder`) use the cloud; everything executes in the VM.
+Use `install` + `configure` (not `all`) here — `all` runs the Ollama pull that a
+cloud-only setup doesn't need. (`doctor` will flag missing Ollama/Gemma; ignore
+that in cloud-only mode.)
 
-> `ados-ollama all` already runs `setup` (model pull) and `install`; step 0 above
-> is mainly to set `OLLAMA_HOST` and prove tool-calling before you start.
+### Hybrid — local `gemma4:26b-mlx` + Opus 4.8 cloud
+
+Local high-volume agents (`committer`, `runner`, `external-researcher`, `image-*`)
+run on **`gemma4:26b-mlx`** on your Mac's GPU; high-stakes agents run on Opus 4.8.
+`gemma4:26b-mlx` is the 26B Mixture-of-Experts Gemma 4 (~4B active) in Apple's MLX
+format — fast on Apple Silicon, ~17 GB, text-only (fine for coding agents).
+
+```bash
+# host: make Ollama reachable from the sandbox, then pull + PROVE tool-calling
+export OLLAMA_HOST=0.0.0.0:11434          # add to your profile; restart Ollama
+"$TOOLKIT/scripts/setup-ollama.sh" --model gemma4:26b-mlx --verify-tools
+#   want "Tool-calling works on gemma4:26b-mlx"; if it WARNs, use gemma4:26b (GGUF)
+
+git clone https://github.com/MikeStitt/elephant.git
+cd elephant
+
+# install + pull + write the hybrid config (preview with --dry-run first)
+"$TOOLKIT/tools/ados-ollama" all --target . \
+  --model gemma4:26b-mlx --cloud-model anthropic/claude-opus-4-8 --dry-run
+"$TOOLKIT/tools/ados-ollama" all --target . \
+  --model gemma4:26b-mlx --cloud-model anthropic/claude-opus-4-8
+git add -A && git commit -m "chore: ADOS config (hybrid: gemma4:26b-mlx + Opus 4.8)"
+
+# launch (local half hits host Ollama via host.docker.internal; cloud half Anthropic)
+"$TOOLKIT/tools/ados-sandbox" --target . \
+  --env ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  --allow-host api.anthropic.com
+```
+
+For a fully-local setup (all agents on Gemma, no cloud), pass `--local-only` to
+`configure` and drop the cloud key.
+
+### Then, inside OpenCode
+
+Drive ADOS as usual — autopilot `@pm deliver change GH-1`, or step by step
+(`/plan-change` → `/write-spec` → … → `/pr`). Everything the agents run executes
+in the sandbox VM.
 
 ## Commands
 
