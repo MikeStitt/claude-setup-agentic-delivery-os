@@ -27,7 +27,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
   - [x] first bats smoke test (`scripts/.tests/setup-dev.bats`, 4 tests)
 - [x] **M1 — Preflight doctor** — `tools/ados-ollama-doctor` (read-only deps check) + shared `scripts/lib/common.sh`
 - [x] **M2 — Ollama provisioning** — `scripts/setup-ollama.sh` (`--model`, pull Gemma, verify responds + tool-probe)
-- [ ] **M3 — ADOS install integration** — `scripts/install-ados.sh` (global + project-local; record SHA)
+- [x] **M3 — ADOS install integration** — `scripts/install-ados.sh` (global + project-local; record SHA)
 - [ ] **M4 — Hybrid config generator** — `tools/gen-opencode-config` (target `.opencode/opencode.jsonc`)
 - [ ] **M5 — Docker sandbox launcher** — `tools/ados-sandbox` (spike: `docker sandbox` + host-gateway Ollama)
 - [ ] **M6 — Orchestrator** — `tools/ados-ollama` (`doctor|setup|install|configure|sandbox|all`)
@@ -50,6 +50,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
   did NOT tool-call on the probe → confirms the plan risk. Tool-heavy local agents
   (runner/committer) need a larger/tool-capable Gemma or stay cloud; M4's default map
   keeps this conservative + table-driven. Starting M3.
+- **2026-06-05** — M3 done: `scripts/install-ados.sh`; 19/19 bats green incl. a live
+  functional test that ran ADOS's installer into a temp git repo, copied agent/command
+  defs project-local (the bit ADOS only does globally → needed for sandbox visibility),
+  wrote `.opencode/ados-provenance.txt`, and confirmed idempotent re-run. Starting M4.
 
 ---
 
