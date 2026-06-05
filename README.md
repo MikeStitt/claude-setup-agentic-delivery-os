@@ -30,11 +30,12 @@ missing.
 
 ## Quickstart: put `elephant` under ADOS-on-Ollama
 
-Both paths below share these two lines:
+The paths below set the toolkit location; the Anthropic key is only needed for the
+cloud and hybrid paths (not the fully-local one):
 
 ```bash
 TOOLKIT=~/projects/claude-setup-agentic-delivery-os   # this repo
-export ANTHROPIC_API_KEY=sk-ant-...                   # your Anthropic key
+export ANTHROPIC_API_KEY=sk-ant-...                   # cloud + hybrid paths only
 ```
 
 ### All-cloud — Anthropic Opus 4.8 (no local model)
@@ -91,8 +92,28 @@ git add -A && git commit -m "chore: ADOS config (hybrid: gemma4:26b-mlx + Opus 4
   --allow-host api.anthropic.com
 ```
 
-For a fully-local setup (all agents on Gemma, no cloud), pass `--local-only` to
-`configure` and drop the cloud key.
+### Fully local — `gemma4:26b-mlx` only (no cloud)
+
+Every agent — including the high-stakes ones — runs on `gemma4:26b-mlx` via
+Ollama. No API key and no cloud egress: fully private/offline. The tradeoff is
+that the hard agents (`architect`, `reviewer`, …) now run on Gemma instead of
+Opus, so expect lower quality on those.
+
+```bash
+# host: make Ollama reachable from the sandbox, then pull + PROVE tool-calling
+export OLLAMA_HOST=0.0.0.0:11434          # add to your profile; restart Ollama
+"$TOOLKIT/scripts/setup-ollama.sh" --model gemma4:26b-mlx --verify-tools
+
+git clone https://github.com/MikeStitt/elephant.git
+cd elephant
+
+# install + pull + write an all-local config (every agent on the Gemma model)
+"$TOOLKIT/tools/ados-ollama" all --target . --model gemma4:26b-mlx --local-only
+git add -A && git commit -m "chore: ADOS config (fully local, gemma4:26b-mlx)"
+
+# launch — no cloud key or extra --allow-host needed (host.docker.internal is allowed)
+"$TOOLKIT/tools/ados-sandbox" --target .
+```
 
 ### Then, inside OpenCode
 
