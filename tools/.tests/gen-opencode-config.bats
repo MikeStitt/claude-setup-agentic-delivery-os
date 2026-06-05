@@ -60,6 +60,27 @@ setup() {
   rm -rf "${tmp}"
 }
 
+@test "--cloud-only puts every agent on the cloud model" {
+  tmp="$(mktemp -d)"
+  run "${TOOL}" --target "${tmp}" --local-model gemma4:26b-mlx \
+    --cloud-model anthropic/claude-opus-4-8 --cloud-only
+  [ "${status}" -eq 0 ]
+  cfg="${tmp}/.opencode/opencode.jsonc"
+  grep -q '"committer": { "model": "anthropic/claude-opus-4-8" }' "${cfg}"
+  ! grep -q 'ollama/' "${cfg}"
+  rm -rf "${tmp}"
+}
+
+@test "--local-only puts every agent on the local model" {
+  tmp="$(mktemp -d)"
+  run "${TOOL}" --target "${tmp}" --local-model gemma4:26b-mlx --local-only
+  [ "${status}" -eq 0 ]
+  cfg="${tmp}/.opencode/opencode.jsonc"
+  grep -q '"architect": { "model": "ollama/gemma4:26b-mlx" }' "${cfg}"
+  ! grep -qE '"model": "anthropic/' "${cfg}"
+  rm -rf "${tmp}"
+}
+
 @test "an existing differing config is preserved without --force" {
   tmp="$(mktemp -d)"
   "${TOOL}" --target "${tmp}" --local-model gemma3:27b >/dev/null

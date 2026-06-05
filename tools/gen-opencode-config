@@ -42,6 +42,7 @@ OLLAMA_URL="${OLLAMA_URL:-}"
 [[ -n "${OLLAMA_URL}" ]] || OLLAMA_URL='{env:OLLAMA_BASE_URL}'
 NUM_CTX="${NUM_CTX:-32000}"
 FORCE=false
+MODE="hybrid" # hybrid | cloud-only | local-only
 
 # The hybrid map (edit here to retune). Cloud = high-stakes/tool-heavy tiers 1-2;
 # local = high-volume/cheap tiers 3-5. NOTE: local models MUST support tool-calling
@@ -116,6 +117,8 @@ Options:
   --cloud-model <id>   provider/model for cloud agents (default: ${CLOUD_MODEL})
   --ollama-url <url>   baseURL for Ollama (default: ${OLLAMA_URL})
   --num-ctx <n>        Context window for the local provider (default: ${NUM_CTX})
+  --cloud-only         Put ALL agents on the cloud model (no local agents)
+  --local-only         Put ALL agents on the local Ollama model
   -f, --force          Overwrite an existing, differing config
   -n, --dry-run        Show what would be done without doing it
   -v, --verbose        Debug output
@@ -155,6 +158,8 @@ main() {
         shift
         NUM_CTX="${1:?--num-ctx requires a value}"
         ;;
+      --cloud-only) MODE="cloud-only" ;;
+      --local-only) MODE="local-only" ;;
       -f | --force) FORCE=true ;;
       -n | --dry-run) DRY_RUN=true ;;
       -v | --verbose) VERBOSE=true ;;
@@ -162,6 +167,20 @@ main() {
     esac
     shift
   done
+
+  # Collapse the hybrid map for the single-runtime modes.
+  case "${MODE}" in
+    cloud-only)
+      CLOUD_AGENTS+=("${LOCAL_AGENTS[@]}")
+      LOCAL_AGENTS=()
+      ;;
+    local-only)
+      LOCAL_AGENTS=("${CLOUD_AGENTS[@]}" "${LOCAL_AGENTS[@]}")
+      CLOUD_AGENTS=()
+      ;;
+    hybrid) ;;
+    *) die_config "Unknown mode: ${MODE}" ;;
+  esac
 
   local target dest tmp
   target="$(cd "${TARGET_DIR}" 2>/dev/null && pwd -P)" \

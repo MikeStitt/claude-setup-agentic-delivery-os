@@ -42,6 +42,7 @@ PASSTHRU=()
 # Argument arrays assembled from the parsed flags (filled in main).
 DRY=()
 VERBOSE_ARG=()
+MODE_ARGS=() # --cloud-only / --local-only, forwarded to configure only
 
 cmd_doctor() {
   local args=()
@@ -65,7 +66,7 @@ cmd_configure() {
   [[ -n "${MODEL}" ]] && args+=(--local-model "${MODEL}")
   [[ -n "${CLOUD_MODEL}" ]] && args+=(--cloud-model "${CLOUD_MODEL}")
   [[ -n "${NUM_CTX}" ]] && args+=(--num-ctx "${NUM_CTX}")
-  "${TOOLS}/gen-opencode-config" --target "${TARGET}" "${args[@]}" "${DRY[@]}" "${VERBOSE_ARG[@]}" "${PASSTHRU[@]}"
+  "${TOOLS}/gen-opencode-config" --target "${TARGET}" "${args[@]}" "${MODE_ARGS[@]}" "${DRY[@]}" "${VERBOSE_ARG[@]}" "${PASSTHRU[@]}"
 }
 
 cmd_sandbox() {
@@ -101,6 +102,8 @@ Options:
   --model <tag>       Local Gemma model (forwarded to setup + configure)
   --cloud-model <id>  Cloud provider/model for high-stakes agents
   --num-ctx <n>       Local context window
+  --cloud-only        All agents on the cloud model (configure/all)
+  --local-only        All agents on the local Ollama model (configure/all)
   -n, --dry-run       Show what would be done without doing it
   -v, --verbose       Debug output
   -h, --help          Show this help
@@ -140,6 +143,8 @@ main() {
         shift
         NUM_CTX="${1:?--num-ctx requires a value}"
         ;;
+      --cloud-only) MODE_ARGS+=(--cloud-only) ;;
+      --local-only) MODE_ARGS+=(--local-only) ;;
       -n | --dry-run) DRY_RUN=true ;;
       -v | --verbose) VERBOSE=true ;;
       --)
