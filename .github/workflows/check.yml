@@ -16,7 +16,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install tools (shellcheck, shfmt, bats)
-        run: brew install shellcheck shfmt bats-core
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${RUNNER_OS}" = "macOS" ]; then
+            brew install shellcheck shfmt bats-core
+          else
+            # Linux: pin shellcheck/shfmt to the local versions; bats from apt.
+            sudo apt-get update -qq
+            sudo apt-get install -y bats
+            curl -fsSL https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz | tar -xJ
+            sudo install shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
+            curl -fsSL -o shfmt https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_amd64
+            sudo install shfmt /usr/local/bin/shfmt
+          fi
+          shellcheck --version | sed -n 2p
+          shfmt --version
+          bats --version
 
       - name: make check
         run: make check
