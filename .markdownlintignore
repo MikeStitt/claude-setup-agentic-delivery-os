@@ -1,0 +1,7 @@
+# Files/dirs excluded from markdownlint.
+#
+# .docs/ holds the living plan + status tracker and other working notes that are
+# committed frequently as work proceeds. They are deliberately NOT held to
+# document-quality standards so plan/status commits are never blocked. See the
+# constitution's scratch escape-hatch rationale (parts/shared.md will record this).
+.docs/
