@@ -25,7 +25,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
   - [x] `scripts/setup-dev.sh` (brew: bash shellcheck shfmt bats-core) — bash 3.2-safe bootstrap
   - [x] CI: GitHub Actions running `make check` on **macOS + Linux** (validates on first push)
   - [x] first bats smoke test (`scripts/.tests/setup-dev.bats`, 4 tests)
-- [ ] **M1 — Preflight doctor** — `tools/ados-ollama-doctor` (read-only deps check)
+- [x] **M1 — Preflight doctor** — `tools/ados-ollama-doctor` (read-only deps check) + shared `scripts/lib/common.sh`
 - [ ] **M2 — Ollama provisioning** — `scripts/setup-ollama.sh` (`--model`, pull Gemma, verify tool-calls)
 - [ ] **M3 — ADOS install integration** — `scripts/install-ados.sh` (global + project-local; record SHA)
 - [ ] **M4 — Hybrid config generator** — `tools/gen-opencode-config` (target `.opencode/opencode.jsonc`)
@@ -42,6 +42,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - **2026-06-05** — M0 done: `make check` (shellcheck + shfmt + bats) green locally;
   installed brew bash 5.3.12 / shellcheck 0.11 / shfmt 3.13 / bats 1.13. Pending live
   validation: GitHub Actions CI (on push) and prek hook run. Starting M1.
+- **2026-06-05** — M1 done: `tools/ados-ollama-doctor` + shared `scripts/lib/common.sh`;
+  9/9 bats green. Live run on this host: all required PASS except Gemma model (FAIL,
+  fixed by M2); docker + `docker sandbox` + ollama + opencode all present. Starting M2.
 
 ---
 

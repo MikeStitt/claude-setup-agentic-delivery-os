@@ -1,6 +1,10 @@
 # ShellCheck configuration for the ADOS-on-Ollama toolkit.
 shell=bash
 enable=all
+# Follow `source`d files so helpers in scripts/lib are analysed; resolve
+# `# shellcheck source=` paths relative to each script's own directory.
+external-sources=true
+source-path=SCRIPTDIR
 # SC2312: "Consider invoking this command separately to avoid masking its return
 # value" — too noisy for the log/pipe patterns used throughout.
 disable=SC2312
