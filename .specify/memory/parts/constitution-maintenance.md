@@ -40,6 +40,24 @@ checklist for any change to `constitution.md` or a part.
 
 ## Changelog
 
+- **1.1.0 (2026-06-05)** — MINOR: synced the constitution to the as-built
+  ADOS-on-Ollama tooling (milestones M0–M8) and added one new rule.
+  - Rewrote [`parts/ados-ollama.md`](ados-ollama.md) to the **as-built** design:
+    we own the project's auto-loaded `.opencode/opencode.jsonc` (OpenCode does not
+    auto-load `opencode-<provider>.jsonc`); agent/command defs install
+    project-local (a Docker sandbox can't see host `~/.config/opencode`); host
+    Ollama must bind `0.0.0.0` (`OLLAMA_HOST=0.0.0.0:11434`) and the sandbox
+    reaches it via `host.docker.internal`; `baseURL` via `{env:OLLAMA_BASE_URL}`;
+    the empirical tool-calling caveat (`gemma3:1b` can't tool-call → local agents
+    need a tool-capable Gemma); and the `docker sandbox` runtime (no per-sandbox
+    CPU/mem flag — size in Docker Desktop). Added the as-built toolkit command
+    table.
+  - Added a `.docs/` document-quality exemption rule to
+    [`parts/shared.md`](shared.md): markdownlint/Prettier skip `.docs/` (companions
+    `.markdownlintignore`, `.prettierignore`, and the `exclude: ^\.docs/` in
+    `.pre-commit-config.yaml`) so the living plan/status tracker commits freely.
+    Companions exist and were exercised by inspection; full hook execution lands
+    when `prek` is run.
 - **1.0.0 (2026-06-05)** — Initial constitution for
   `claude-setup-agentic-delivery-os`. The structure (lean always-read core +
   per-work-type `parts/`, the Working Rules contract, Engineering Discipline) was

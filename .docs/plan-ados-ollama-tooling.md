@@ -32,7 +32,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [x] **M5 — Docker sandbox launcher** — `tools/ados-sandbox` (spike done; see findings below)
 - [x] **M6 — Orchestrator** — `tools/ados-ollama` (`doctor|setup|install|configure|sandbox|all`)
 - [x] **M7 — macOS Seatbelt sandbox** — `tools/ados-sandbox-macos` (experimental; write-confinement verified)
-- [ ] **M8 — Docs + constitution sync** — README, usage guide, amend `parts/ados-ollama.md`
+- [x] **M8 — Docs + constitution sync** — README, amend `parts/ados-ollama.md` + `shared.md`, constitution v1.1.0
 
 ## Progress log
 
@@ -77,6 +77,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
   confinement for macOS-native work); 47/47 bats green. **Verified live on macOS**: a
   write inside the target succeeds, a write outside is BLOCKED by sandbox-exec. Also
   fixed `${CMD_ARGS[*]}` newline-join in display. Starting M8 (docs + constitution sync).
+- **2026-06-05** — M8 done: real README; `parts/ados-ollama.md` rewritten to the
+  as-built design; `.docs/` doc-check exemption recorded in `parts/shared.md`;
+  constitution bumped to **v1.1.0** with a changelog entry (governed amendment).
+  **All 9 milestones complete; 47/47 bats green.** Remaining for the user: a full
+  interactive `@pm`-in-sandbox run (needs cloud keys + a tool-capable Gemma), and
+  opening PRs / running prek + CI.
 
 ---
 

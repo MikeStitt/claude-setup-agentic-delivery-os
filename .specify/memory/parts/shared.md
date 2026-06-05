@@ -13,8 +13,16 @@ rule. Read together with the [constitution](../constitution.md).
   `pre-commit` Python package. Hooks MUST remain active; never bypass with
   `--no-verify` (see the constitution's Quality Gates). (Hooks/CI land with the
   tooling; this records the intended shape.)
-- **CI**: GitHub Actions reproduces the local `make check` (shellcheck + `shfmt
-  -d` + the bats / embedded test suites) on every pull request.
+- **CI**: GitHub Actions (`.github/workflows/check.yml`) reproduces the local
+  `make check` (shellcheck + `shfmt -d` + the bats suites) on **macOS and Linux**
+  on every pull request.
+- **`.docs/` is exempt from document-quality checks.** The living plan/status
+  tracker and working notes under `.docs/` are committed frequently as work
+  proceeds, so markdownlint and Prettier MUST skip them — see `.markdownlintignore`
+  and `.prettierignore` (both list `.docs/`), and the matching `exclude: ^\.docs/`
+  in `.pre-commit-config.yaml`. A noisy git history under `.docs/` is accepted by
+  design. This is the same spirit as the scratch escape-hatch: working artefacts
+  are not held to publication standards.
 - **Changelog**: `git-cliff` auto-generates from conventional commits. Do not
   hand-maintain `## [Unreleased]` (regenerate via `git cliff --unreleased`).
   Manual edits are limited to released sections for light curation, factual
