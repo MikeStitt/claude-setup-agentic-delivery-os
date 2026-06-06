@@ -1,0 +1,6 @@
+# Files/dirs excluded from Prettier formatting.
+#
+# .docs/ holds the living plan + status tracker and working notes committed
+# frequently as work proceeds; keep them out of format checks so plan/status
+# commits are never blocked. See .markdownlintignore for the matching rationale.
+.docs/
