@@ -212,7 +212,7 @@ main() {
     shift
   done
 
-  require_cmd docker
+  [[ "${DRY_RUN}" == "true" ]] || require_cmd docker
 
   TARGET_ABS="$(cd "${TARGET_DIR}" 2>/dev/null && pwd -P)" \
     || die_config "Target directory not found: ${TARGET_DIR}"
