@@ -219,6 +219,54 @@ of them for the full flag list.
 - `tools/ados-sandbox-macos` → writes a **temp** Seatbelt profile (deleted on exit)
   and runs the command confined; nothing persistent.
 
+## Network model (Docker sandbox)
+
+The agents run in a Docker **microVM** — its own kernel, filesystem, and network.
+Only the target project is mounted in; the rest of your Mac's filesystem is
+invisible to them. Egress is governed by the sandbox proxy, which `ados-sandbox`
+configures as **`--policy allow --allow-host localhost:11434`**.
+
+```text
+                  ┌──────────────────── your Mac (host) ────────────────────┐
+  internet  ◀─allow─▶                                   Ollama :11434 (0.0.0.0)
+  cloud API ◀─allow─▶   Docker microVM ── allow ───────▶ (agent dials
+                    │     OpenCode + ADOS agents           host.docker.internal,
+                    │        │                             proxy rewrites→localhost)
+  your LAN  ──DENY──│        └─ project mount (rw)                              │
+  other host ports ─DENY                                                       │
+                    └──────────────────────────────────────────────────────────┘
+```
+
+**What the sandbox allows and denies** (verified empirically):
+
+| Target | Policy |
+| --- | --- |
+| Public **internet** (any domain) | ✅ allow — research, npm/pip, cloud model APIs |
+| **Host Ollama** at `host.docker.internal:11434` | ✅ allow — the single host hole |
+| **Other host services** (any other localhost port, e.g. SSH) | ❌ deny |
+| **Your LAN / local network** (10.x, 172.16.x, 192.168.x) | ❌ deny |
+| **Host filesystem** outside the mounted project | ❌ not present (microVM) |
+
+So the agents can explore the internet and use your local Gemma, but cannot reach
+the rest of your machine or network.
+
+**Why the allow-rule is `localhost:11434`, not `host.docker.internal`:** the proxy
+rewrites `host.docker.internal` → `localhost` before matching the allow-list, so
+the rule must name `localhost:11434`. The agent's config baseURL still uses
+`http://host.docker.internal:11434/v1` — that's the address it dials.
+
+**Prerequisite:** host Ollama must listen on `0.0.0.0` (`OLLAMA_HOST=0.0.0.0:11434`),
+not the default `127.0.0.1`, or the VM can't reach it.
+
+**To lock it down further** (allowlist instead of open internet), set deny-by-default
+and name the hosts you trust, then restart the sandbox:
+
+```bash
+docker sandbox network proxy ados-<dir> --policy deny \
+  --allow-host localhost:11434 --allow-host api.anthropic.com \
+  --allow-host registry.npmjs.org
+```
+
 ## Development
 
 ```bash

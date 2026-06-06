@@ -89,7 +89,10 @@ create_sandbox() {
 }
 
 configure_proxy() {
-  local -a args=()
+  # --policy allow opens general INTERNET egress; the host (localhost/LAN) stays
+  # denied except the explicit --allow-host rules below (Ollama). Net effect:
+  # agents reach the internet + Ollama, but not your other host services or LAN.
+  local -a args=(--policy allow)
   local h
   for h in "${ALLOW_HOSTS[@]}"; do args+=(--allow-host "${h}"); done
   run_cmd docker sandbox network proxy "${SANDBOX_NAME}" "${args[@]}"
